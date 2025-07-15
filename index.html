@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Malla ISI - UTN FRT</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f7f6fb;
+      padding: 40px;
+    }
+    h1 {
+      color: #d92661;
+      font-size: 28px;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    .nivel {
+      margin-bottom: 40px;
+    }
+    .nivel h2 {
+      color: #d92661;
+      font-size: 22px;
+      margin-bottom: 15px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+    .materia {
+      background: #e3dcfb;
+      border-radius: 15px;
+      padding: 12px;
+      color: #000;
+      font-weight: 500;
+      font-size: 15px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    .materia.locked {
+      opacity: 0.4;
+      pointer-events: none;
+    }
+    .materia.aprobada {
+      text-decoration: line-through;
+      background-color: #d4edda;
+    }
+    .materia.regularizada:not(.aprobada) {
+      background-color: #fff3cd;
+    }
+    .materia h3 {
+      margin: 0 0 8px 0;
+      font-size: 15px;
+    }
+    .botones {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .botones button {
+      padding: 6px;
+      font-size: 13px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .botones button:first-child {
+      background: #d6d4f1;
+    }
+    .botones button:last-child {
+      background: #f7c2c2;
+    }
+    .botones button:hover {
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body>
+<h1>Malla Interactiva - Ingeniería en Sistemas de Información</h1>
+<div id="contenedor-niveles"></div>
+<script>
+const materias = [
+  { "id": 1, "nombre": "Análisis Matemático I", "nivel": 1 },
+  { "id": 2, "nombre": "Álgebra y Geometría Analítica", "nivel": 1 },
+  { "id": 3, "nombre": "Física I", "nivel": 1 },
+  { "id": 4, "nombre": "Inglés I", "nivel": 1 },
+  { "id": 5, "nombre": "Lógica y Estructuras Discretas", "nivel": 1 },
+  { "id": 6, "nombre": "Algoritmos y Estructuras de Datos", "nivel": 1 },
+  { "id": 7, "nombre": "Arquitectura de Computadoras", "nivel": 1 },
+  { "id": 8, "nombre": "Sistemas y Procesos de Negocios", "nivel": 1 },
+  { "id": 9, "nombre": "Análisis Matemático II", "nivel": 2, "reqs": [ { "id": 1, "tipo": "regularizada" }, { "id": 2, "tipo": "regularizada" } ] },
+  { "id": 10, "nombre": "Física II", "nivel": 2, "reqs": [ { "id": 1, "tipo": "regularizada" }, { "id": 3, "tipo": "regularizada" } ] },
+  { "id": 11, "nombre": "Ingeniería y Sociedad", "nivel": 2 },
+  { "id": 12, "nombre": "Inglés II", "nivel": 2, "reqs": [ { "id": 4, "tipo": "regularizada" } ] },
+  { "id": 13, "nombre": "Sintaxis y Semántica de los Lenguajes", "nivel": 2, "reqs": [ { "id": 5, "tipo": "regularizada" }, { "id": 6, "tipo": "regularizada" } ] },
+  { "id": 14, "nombre": "Paradigmas de Programación", "nivel": 2, "reqs": [ { "id": 5, "tipo": "regularizada" }, { "id": 6, "tipo": "regularizada" } ] },
+  { "id": 15, "nombre": "Sistemas Operativos", "nivel": 2, "reqs": [ { "id": 7, "tipo": "regularizada" } ] },
+  { "id": 16, "nombre": "Análisis de Sistemas de Información", "nivel": 2, "reqs": [ { "id": 6, "tipo": "regularizada" }, { "id": 8, "tipo": "regularizada" } ] },
+  { "id": 17, "nombre": "Probabilidad y Estadísticas", "nivel": 3, "reqs": [ { "id": 1, "tipo": "regularizada" }, { "id": 2, "tipo": "regularizada" } ] },
+  { "id": 18, "nombre": "Economía", "nivel": 3, "reqs": [ { "id": 1, "tipo": "aprobada" }, { "id": 2, "tipo": "aprobada" } ] },
+  { "id": 19, "nombre": "Bases de Datos", "nivel": 3, "reqs": [ { "id": 13, "tipo": "regularizada" }, { "id": 16, "tipo": "regularizada" }, { "id": 5, "tipo": "aprobada" }, { "id": 6, "tipo": "aprobada" } ] },
+  { "id": 20, "nombre": "Desarrollo de Software", "nivel": 3, "reqs": [ { "id": 13, "tipo": "regularizada" }, { "id": 16, "tipo": "regularizada" }, { "id": 5, "tipo": "aprobada" }, { "id": 6, "tipo": "aprobada" } ] },
+  { "id": 21, "nombre": "Comunicación de Datos", "nivel": 3, "reqs": [ { "id": 3, "tipo": "aprobada" }, { "id": 7, "tipo": "aprobada" } ] },
+  { "id": 22, "nombre": "Análisis Numérico", "nivel": 3, "reqs": [ { "id": 9, "tipo": "regularizada" }, { "id": 1, "tipo": "aprobada" }, { "id": 2, "tipo": "aprobada" } ] },
+  { "id": 23, "nombre": "Diseño de Sistemas de Información", "nivel": 3, "reqs": [ { "id": 14, "tipo": "regularizada" }, { "id": 16, "tipo": "regularizada" }, { "id": 4, "tipo": "aprobada" }, { "id": 6, "tipo": "aprobada" }, { "id": 8, "tipo": "aprobada" } ] },
+  { "id": 24, "nombre": "Legislación", "nivel": 4, "reqs": [ { "id": 11, "tipo": "regularizada" } ] },
+  { "id": 25, "nombre": "Ingeniería y Calidad de Software", "nivel": 4, "reqs": [ { "id": 18, "tipo": "regularizada" }, { "id": 19, "tipo": "regularizada" }, { "id": 23, "tipo": "regularizada" }, { "id": 13, "tipo": "aprobada" }, { "id": 14, "tipo": "aprobada" } ] },
+  { "id": 26, "nombre": "Redes de Datos", "nivel": 4, "reqs": [ { "id": 15, "tipo": "regularizada" }, { "id": 22, "tipo": "regularizada" } ] },
+  { "id": 27, "nombre": "Investigación Operativa", "nivel": 4, "reqs": [ { "id": 17, "tipo": "regularizada" }, { "id": 22, "tipo": "regularizada" } ] },
+  { "id": 28, "nombre": "Simulación", "nivel": 4, "reqs": [ { "id": 17, "tipo": "regularizada" }, { "id": 9, "tipo": "aprobada" } ] },
+  { "id": 29, "nombre": "Tecnologías para la Automatización", "nivel": 4, "reqs": [ { "id": 10, "tipo": "regularizada" }, { "id": 22, "tipo": "regularizada" }, { "id": 9, "tipo": "aprobada" } ] },
+  { "id": 30, "nombre": "Administración de Sistemas de Información", "nivel": 4, "reqs": [ { "id": 18, "tipo": "regularizada" }, { "id": 23, "tipo": "regularizada" }, { "id": 16, "tipo": "aprobada" } ] },
+  { "id": 31, "nombre": "Inteligencia Artificial", "nivel": 5, "reqs": [ { "id": 28, "tipo": "regularizada" }, { "id": 17, "tipo": "aprobada" }, { "id": 22, "tipo": "aprobada" } ] },
+  { "id": 32, "nombre": "Ciencia de Datos", "nivel": 5, "reqs": [ { "id": 28, "tipo": "regularizada" }, { "id": 17, "tipo": "aprobada" }, { "id": 19, "tipo": "aprobada" } ] },
+  { "id": 33, "nombre": "Sistemas de Gestión", "nivel": 5, "reqs": [ { "id": 18, "tipo": "regularizada" }, { "id": 27, "tipo": "regularizada" }, { "id": 23, "tipo": "aprobada" } ] },
+  { "id": 34, "nombre": "Gestión Gerencial", "nivel": 5, "reqs": [ { "id": 24, "tipo": "regularizada" }, { "id": 30, "tipo": "regularizada" }, { "id": 20, "tipo": "aprobada" }, { "id": 21, "tipo": "aprobada" } ] },
+  { "id": 35, "nombre": "Seguridad en los Sistemas de Información", "nivel": 5, "reqs": [ { "id": 26, "tipo": "regularizada" }, { "id": 30, "tipo": "regularizada" }, { "id": 21, "tipo": "aprobada" }, { "id": 22, "tipo": "aprobada" } ] },
+  { "id": 36, "nombre": "Proyecto Final", "nivel": 5, "reqs": [ { "id": 25, "tipo": "regularizada" }, { "id": 26, "tipo": "regularizada" }, { "id": 30, "tipo": "regularizada" }, { "id": 12, "tipo": "aprobada" }, { "id": 20, "tipo": "aprobada" }, { "id": 23, "tipo": "aprobada" } ] },
+  { "id": 37, "nombre": "Práctica Supervisada", "nivel": 5 }
+];
+function cargarEstado() {
+  const estado = JSON.parse(localStorage.getItem("estadoMaterias")) || {};
+  materias.forEach(m => Object.assign(m, estado[m.id] || {}));
+}
+function guardarEstado() {
+  const estado = {};
+  materias.forEach(m => {
+    estado[m.id] = { regularizada: m.regularizada, aprobada: m.aprobada };
+  });
+  localStorage.setItem("estadoMaterias", JSON.stringify(estado));
+}
+function requisitosCumplidos(materia) {
+  if (!materia.reqs) return true;
+  return materia.reqs.every(r => {
+    const mat = materias.find(m => m.id === r.id);
+    return mat && mat[r.tipo];
+  });
+}
+function render() {
+  const contenedor = document.getElementById("contenedor-niveles");
+  contenedor.innerHTML = "";
+  const niveles = [...new Set(materias.map(m => m.nivel))];
+  niveles.forEach(nivel => {
+    const seccion = document.createElement("div");
+    seccion.className = "nivel";
+    const titulo = document.createElement("h2");
+    titulo.textContent = `Nivel ${nivel}`;
+    seccion.appendChild(titulo);
+    const grid = document.createElement("div");
+    grid.className = "grid";
+    materias.filter(m => m.nivel === nivel).forEach(m => {
+      const div = document.createElement("div");
+      div.className = "materia";
+      if (!requisitosCumplidos(m)) div.classList.add("locked");
+      if (m.regularizada) div.classList.add("regularizada");
+      if (m.aprobada) div.classList.add("aprobada");
+      const h3 = document.createElement("h3");
+      h3.textContent = m.nombre;
+      div.appendChild(h3);
+      const botones = document.createElement("div");
+      botones.className = "botones";
+      const btnReg = document.createElement("button");
+      btnReg.textContent = m.regularizada ? "✔ Regularizada" : "Regularizar";
+      btnReg.onclick = () => {
+        m.regularizada = !m.regularizada;
+        if (!m.regularizada) m.aprobada = false;
+        guardarEstado();
+        render();
+      };
+      botones.appendChild(btnReg);
+      const btnAprob = document.createElement("button");
+      btnAprob.textContent = m.aprobada ? "✔ Aprobada" : "Aprobar";
+      btnAprob.onclick = () => {
+        if (!m.regularizada) return alert("Debes regularizarla antes.");
+        m.aprobada = !m.aprobada;
+        guardarEstado();
+        render();
+      };
+      botones.appendChild(btnAprob);
+      div.appendChild(botones);
+      grid.appendChild(div);
+    });
+    seccion.appendChild(grid);
+    contenedor.appendChild(seccion);
+  });
+}
+cargarEstado();
+render();
+</script>
+</body>
+</html>
